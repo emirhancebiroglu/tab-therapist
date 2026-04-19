@@ -20,12 +20,18 @@
       </div>
     </header>
 
+    <!-- LOADING STATE -->
+    <div class="loading-state" id="loadingState">
+      <span class="logo-icon" style="font-size:36px">🛋️</span>
+      <p class="loading-text">Terapist notlarını inceliyor...</p>
+    </div>
+
     <!-- MAIN: Skor Dairesi + Badge -->
-    <main class="main">
+    <main class="main" id="dashboardMain" hidden>
 
       <div class="score-section">
         <div class="score-ring-wrapper">
-          <svg class="score-ring" viewBox="0 0 120 120" width="140" height="140">
+          <svg class="score-ring" viewBox="0 0 120 120" width="110" height="110">
             <circle class="ring-bg" cx="60" cy="60" r="52" />
             <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="52" />
           </svg>
@@ -74,6 +80,14 @@
       </section>
 
     </main>
+
+    <!-- SINGLE TAB MESSAGE -->
+    <div class="loading-state" id="singleTabMsg" hidden>
+      <span style="font-size:48px">🧘</span>
+      <p class="loading-text" style="text-align:center;color:var(--accent-calm);animation:none;opacity:1">
+        Sadece 1 sekme mi? Terapiste ihtiyacın yok,<br>sen zaten aydınlanmışsın!
+      </p>
+    </div>
 
     <footer class="footer">
       <span>TabTherapist v1.0.0</span>

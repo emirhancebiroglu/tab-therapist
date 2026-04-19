@@ -4,7 +4,7 @@ created: 2026-04-19
 updated: 2026-04-19
 source: manifest.json
 tags: [icons, ui, manifest-v3]
-status: open
+status: closed
 ---
 
 # Eksik İkonlar

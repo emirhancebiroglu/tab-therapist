@@ -66,3 +66,22 @@ title: İşlem Günlüğü
   - Güncellendi: popup/popup.html — Aksiyon butonlarına ID eklendi (disabled kaldırıldı), modal overlay HTML eklendi
   - Güncellendi: popup/popup.css — Modal stilleri: backdrop-filter yarı saydam overlay, --bg-secondary kutu, --text-muted iptal butonu, --accent-danger onay butonu
   - Güncellendi: popup/popup.js — currentStats değişkeni, openModal() + refreshStats() fonksiyonları, 3 buton için event listener'lar (tıklama → modal → onay → aksiyon → istatistik yenileme)
+
+[2026-04-19 18:30] HATA DÜZELTME: UI ve Logic hataları (ui-logic-fixes.md) giderildi
+  - FIX 1 (Loading): showDashboard()/showSingleTabMessage() hidden attribute ile loading swap'ı doğrulandı — zaten doğru çalışıyordu
+  - FIX 2 (Aydınlanma mesajı): Koşul totalTabs===1 — doğru, ek değişiklik gerekmedi
+  - FIX 3 (Mantıksız modal): updateActionButtons() fonksiyonu eklendi; ancientTabCount/duplicateCount/totalTabs'a göre butonlar disabled; event listener'larda erken çıkış koşulları eklendi
+  - FIX 4 (Scroll): max-height: 500px + overflow: hidden eklendi; header padding sıkıştırıldı; score-ring 140→110px; score-value font-size 36→28px; stat-card padding/font azaltıldı; share-btn padding azaltıldı; actions-section gap 8→5px; action-btn padding/font azaltıldı; .action-btn:disabled stili eklendi
+
+[2026-04-19 18:00] FIX: Eksik ikonlar sorunu çözüldü (issues/missing-icons.md kapatıldı)
+  - Oluşturulan: assets/icons/icon.svg — Retro-Terapist tema (lacivert zemin, amber koltuk, teal sekmeler)
+  - Oluşturulan: assets/icons/icon-16.png, icon-48.png, icon-128.png — sharp ile otomatik üretildi
+  - Oluşturulan: utils/generate-icons.js — SVG→PNG dönüştürme betiği
+  - Oluşturulan: package.json — sharp devDependency
+  - Güncellendi: manifest.json — icons + action.default_icon blokları eklendi
+
+[2026-04-19 17:00] ADIM 7: Polish, hover efektleri, loading state ve edge case yönetimi eklendi
+  - Güncellendi: popup/popup.css — @keyframes badgeAppear (fade-in + scale spring) kişilik badge animasyonu; .share-btn hover translateY(-2px) + gölge büyümesi; .action-btn:not([disabled]):hover translateY(-2px) + gölge; loading-state ve @keyframes pulse stilleri
+  - Güncellendi: scorecard/scorecard.css — .btn hover translateY(-2px) + box-shadow büyümesi, .btn-download:hover amber gölge
+  - Güncellendi: popup/popup.html — #loadingState ("Terapist notlarını inceliyor..." pulse animasyonu), #dashboardMain (hidden ile başlar), #singleTabMsg (1 sekme edge case mesajı)
+  - Güncellendi: popup/popup.js — showDashboard() / showSingleTabMessage() yardımcıları; renderStats() başında totalTabs===1 kontrolü → mizahi aydınlanma mesajı; renderError() loading state'i gizler

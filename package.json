@@ -1,0 +1,11 @@
+{
+  "name": "tab-therapist",
+  "version": "1.0.0",
+  "description": "TabTherapist Chrome Extension dev tooling",
+  "scripts": {
+    "generate-icons": "node utils/generate-icons.js"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.5"
+  }
+}

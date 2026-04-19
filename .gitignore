@@ -1,1 +1,8 @@
 .obsidian/
+node_modules/
+log.md
+*.log
+.env
+.env.local
+.DS_Store
+Thumbs.db

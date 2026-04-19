@@ -67,9 +67,42 @@ function animateScore(targetScore) {
   requestAnimationFrame(tick);
 }
 
+function showDashboard() {
+  document.getElementById('loadingState').hidden  = true;
+  document.getElementById('singleTabMsg').hidden  = true;
+  document.getElementById('dashboardMain').hidden = false;
+}
+
+function showSingleTabMessage() {
+  document.getElementById('loadingState').hidden  = true;
+  document.getElementById('dashboardMain').hidden = true;
+  document.getElementById('singleTabMsg').hidden  = false;
+}
+
+function updateActionButtons(data) {
+  const btnCloseAncient   = document.getElementById('btnCloseAncient');
+  const btnMergeDuplicates = document.getElementById('btnMergeDuplicates');
+  const btnArchive        = document.getElementById('btnArchive');
+
+  const ancientTabCount = data.ancientTabCount ?? 0;
+  const duplicateCount  = data.duplicateCount  ?? 0;
+  const totalTabs       = data.totalTabs       ?? 0;
+
+  if (btnCloseAncient)    btnCloseAncient.disabled   = (ancientTabCount === 0);
+  if (btnMergeDuplicates) btnMergeDuplicates.disabled = (duplicateCount === 0);
+  if (btnArchive)         btnArchive.disabled         = (totalTabs === 0);
+}
+
 function renderStats(data) {
-  document.getElementById('statTabs').textContent      = data.totalTabs      ?? '--';
-  document.getElementById('statWindows').textContent   = data.totalWindows   ?? '--';
+  if (data.totalTabs === 1) {
+    showSingleTabMessage();
+    return;
+  }
+
+  showDashboard();
+
+  document.getElementById('statTabs').textContent       = data.totalTabs      ?? '--';
+  document.getElementById('statWindows').textContent    = data.totalWindows   ?? '--';
   document.getElementById('statDuplicates').textContent = data.duplicateCount ?? '--';
 
   const badge = document.getElementById('personalityBadge');
@@ -78,14 +111,16 @@ function renderStats(data) {
   badge.dataset.type = PERSONALITY_TYPE_MAP[data.personality] ?? '';
 
   animateScore(data.score ?? 0);
+  updateActionButtons(data);
 }
 
 function renderError() {
-  document.getElementById('scoreValue').textContent     = '?';
+  showDashboard();
+  document.getElementById('scoreValue').textContent       = '?';
   document.getElementById('personalityLabel').textContent = 'Veri alınamadı';
-  document.getElementById('statTabs').textContent       = '--';
-  document.getElementById('statWindows').textContent    = '--';
-  document.getElementById('statDuplicates').textContent = '--';
+  document.getElementById('statTabs').textContent         = '--';
+  document.getElementById('statWindows').textContent      = '--';
+  document.getElementById('statDuplicates').textContent   = '--';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -100,14 +135,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btnCloseAncient').addEventListener('click', () => {
-    openModal('3 günden eski sekmeler kapatılacak. Emin misin?', () => {
+    const ancientTabCount = currentStats?.ancientTabCount ?? 0;
+    if (ancientTabCount === 0) return;
+    openModal(`${ancientTabCount} eski sekme kapatılacak. Emin misin?`, () => {
       chrome.runtime.sendMessage({ type: 'CLOSE_ANCIENT_TABS' }, refreshStats);
     });
   });
 
   document.getElementById('btnMergeDuplicates').addEventListener('click', () => {
-    const count = currentStats?.duplicateCount ?? '?';
-    openModal(`${count} kopya sekme kapatılacak. Emin misin?`, () => {
+    const duplicateCount = currentStats?.duplicateCount ?? 0;
+    if (duplicateCount === 0) return;
+    openModal(`${duplicateCount} kopya sekme kapatılacak. Emin misin?`, () => {
       chrome.runtime.sendMessage({ type: 'MERGE_DUPLICATES' }, refreshStats);
     });
   });
