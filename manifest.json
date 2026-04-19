@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "TabTherapist",
+  "version": "1.0.0",
+  "description": "Tarayıcı sekme alışkanlıklarını analiz edip paylaşılabilir skor kartı üreten Chrome Extension",
+  "permissions": [
+    "tabs",
+    "storage",
+    "alarms"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "TabTherapist"
+  }
+}
