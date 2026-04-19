@@ -3,6 +3,8 @@
 
 importScripts('../utils/analyzer.js');
 
+const ANCIENT_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 gün
+
 console.log('TabTherapist Service Worker başlatıldı');
 
 // Tab oluşturulduğunda ilk görülme zamanını kaydet
@@ -109,7 +111,63 @@ async function collectTabStats() {
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'GET_TAB_STATS') {
     collectTabStats().then(sendResponse);
-    return true; // async response
+    return true;
+  }
+
+  if (message.type === 'CLOSE_ANCIENT_TABS') {
+    chrome.tabs.query({}).then(async (tabs) => {
+      const { tab_history = {} } = await chrome.storage.local.get('tab_history');
+      const now = Date.now();
+      const ancientIds = tabs
+        .filter(t => {
+          const h = tab_history[t.id];
+          return h && (now - h.firstSeen) >= ANCIENT_THRESHOLD_MS;
+        })
+        .map(t => t.id);
+      if (ancientIds.length) await chrome.tabs.remove(ancientIds);
+      sendResponse({ closed: ancientIds.length });
+    });
+    return true;
+  }
+
+  if (message.type === 'MERGE_DUPLICATES') {
+    chrome.tabs.query({}).then(async (tabs) => {
+      const urlMap = {};
+      const toClose = [];
+      for (const tab of tabs) {
+        const url = tab.url || tab.pendingUrl || '';
+        if (!url || url.startsWith('chrome://') || url.startsWith('chrome-extension://')) continue;
+        if (!urlMap[url]) {
+          urlMap[url] = tab;
+        } else {
+          if (tab.active) {
+            toClose.push(urlMap[url].id);
+            urlMap[url] = tab;
+          } else {
+            toClose.push(tab.id);
+          }
+        }
+      }
+      if (toClose.length) await chrome.tabs.remove(toClose);
+      sendResponse({ closed: toClose.length });
+    });
+    return true;
+  }
+
+  if (message.type === 'ARCHIVE_AND_CLOSE') {
+    (async () => {
+      const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const allTabs = await chrome.tabs.query({});
+      const toClose = allTabs.filter(t => t.id !== activeTab?.id);
+      const urls = toClose
+        .map(t => t.url || t.pendingUrl || '')
+        .filter(u => u && !u.startsWith('chrome://') && !u.startsWith('chrome-extension://'));
+      const { archived_tabs = [] } = await chrome.storage.local.get('archived_tabs');
+      await chrome.storage.local.set({ archived_tabs: [...archived_tabs, ...urls] });
+      if (toClose.length) await chrome.tabs.remove(toClose.map(t => t.id));
+      sendResponse({ archived: urls.length });
+    })();
+    return true;
   }
 });
 

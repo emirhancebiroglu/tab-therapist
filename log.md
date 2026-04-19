@@ -47,3 +47,22 @@ title: İşlem Günlüğü
 [2026-04-19 13:00] ADIM 3: Skor Algoritması kodlandı
   - Güncellendi: utils/analyzer.js — calculateHoardingScore(stats) ve getPersonalityType(score) fonksiyonları eklendi
   - Güncellendi: background/service-worker.js — collectTabStats() sonuna skor hesaplaması ve konsol çıktısı entegre edildi
+
+[2026-04-19 14:00] ADIM 4: Dashboard UI tasarımı ve entegrasyonu tamamlandı
+  - Güncellendi: popup/popup.html — Header (logo + tagline), Skor dairesi (SVG ring), Kişilik badge, 3 stat kartı, 3 aksiyon butonu (disabled)
+  - Güncellendi: popup/popup.css — Retro-Terapist tasarım diline tam uyum: CSS değişkenleri (--bg-primary, --accent-warm vb.), Serif başlık, Monospace istatistik, 380×500px boyut, warm gölgeler
+  - Güncellendi: popup/popup.js — GET_TAB_STATS mesajı ile service worker'dan veri çekme, ease-out cubic skor animasyonu, kişilik tipine göre badge renklendirme
+
+[2026-04-19 16:00] ADIM 6: Canvas API ile 1080x1080 skor kartı oluşturma ve indirme özellikleri eklendi
+  - Oluşturulan: scorecard/scorecard.html — yeni sekmede açılan skor kartı sayfası
+  - Oluşturulan: scorecard/scorecard.css — Retro-Therapist temalı sayfa stili
+  - Oluşturulan: scorecard/scorecard.js — Canvas 1080×1080 çizici; skor dairesi, kişilik tipi, istatistikler, watermark; PNG indirme, X ve LinkedIn paylaşım butonları
+  - Güncellendi: popup/popup.html — stat kartlarının altına "Sonucumu Paylaş" butonu eklendi
+  - Güncellendi: popup/popup.css — .share-btn stili eklendi (amber solid, Georgian serif)
+  - Güncellendi: popup/popup.js — shareBtn click handler → chrome.tabs.create ile scorecard.html açılır
+
+[2026-04-19 15:00] ADIM 5: Aksiyonlar (Kapatma/Birleştirme/Arşiv) ve Onay Modalı kodlandı
+  - Güncellendi: background/service-worker.js — CLOSE_ANCIENT_TABS (3 gün eşiği), MERGE_DUPLICATES (aktif sekme öncelikli), ARCHIVE_AND_CLOSE (aktif hariç tümünü arşivle) handler'ları eklendi
+  - Güncellendi: popup/popup.html — Aksiyon butonlarına ID eklendi (disabled kaldırıldı), modal overlay HTML eklendi
+  - Güncellendi: popup/popup.css — Modal stilleri: backdrop-filter yarı saydam overlay, --bg-secondary kutu, --text-muted iptal butonu, --accent-danger onay butonu
+  - Güncellendi: popup/popup.js — currentStats değişkeni, openModal() + refreshStats() fonksiyonları, 3 buton için event listener'lar (tıklama → modal → onay → aksiyon → istatistik yenileme)
