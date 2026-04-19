@@ -7,3 +7,4 @@ log.md
 .DS_Store
 Thumbs.db
 dist/*
+launch/

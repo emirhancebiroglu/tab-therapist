@@ -95,3 +95,8 @@ title: İşlem Günlüğü
   - Oluşturulan: README.md — Profesyonel proje tanıtımı (emoji destekli, İngilizce), özellikler, kurulum, kullanım, skor algoritması, tech stack, proje yapısı
   - Oluşturulan: LICENSE — MIT lisansı (Yıl: 2026, İsim: Emirhan Cebiroğlu)
   - Oluşturulan: CONTRIBUTING.md — Katkı rehberi, bug report, feature request, PR süreci, kod stili, test checklist
+
+[2026-04-19 21:00] ADIM 10: Lansman içerikleri (X, LinkedIn, Store) hazırlandı
+  - Oluşturulan: launch/twitter_thread.md — 6 tweet'lik lansman serisi (Türkçe + İngilizce), retro-terapist tonuyla emoji destekli
+  - Oluşturulan: launch/linkedin_post.md — Hikaye anlatıcılığı içeren profesyonel gönderi (Türkçe + İngilizce), developer odaklı
+  - Oluşturulan: launch/store_description.md — Chrome Web Store için kısa + uzun açıklama, SEO anahtar kelimeleri, screenshot kılavuzu
