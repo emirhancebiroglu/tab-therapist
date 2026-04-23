@@ -98,18 +98,52 @@ function drawCard(ctx, data, oldestDays) {
   ctx.stroke();
 
   // 11. Stats
+  const attentionFragment   = data.attentionFragment   ?? null;
+  const insurancePolicyCount = data.insurancePolicy     ?? null;
+
   ctx.fillStyle = '#eee8d5';
   ctx.font = '30px "Courier New", monospace';
-  ctx.fillText('\uD83D\uDCC1 Toplam Sekme: ' + totalTabs,   W / 2, 836);
-  ctx.fillText('\uD83D\uDC65 Pencere: ' + totalWindows,    W / 2, 886);
+  ctx.fillText('\uD83D\uDCC1 Toplam Sekme: ' + totalTabs,   W / 2, 820);
+  ctx.fillText('\uD83D\uDC65 Pencere: ' + totalWindows,     W / 2, 866);
   if (oldestDays > 0) {
-    ctx.fillText('\u23F0 En Eski Sekme: ' + oldestDays + ' Gün', W / 2, 936);
+    ctx.fillText('\u23F0 En Eski Sekme: ' + oldestDays + ' Gün', W / 2, 912);
+  }
+  if (attentionFragment !== null) {
+    ctx.fillText('\uD83E\uDDE0 Dikkat Par\u00E7alanmas\u0131: %' + attentionFragment, W / 2, 958);
+  }
+  if (insurancePolicyCount !== null) {
+    ctx.fillText('\uD83D\uDCCB Sigorta Poli\u00E7eleri: ' + insurancePolicyCount + ' adet', W / 2, 1004);
   }
 
   // 12. Watermark
   ctx.fillStyle = 'rgba(136, 146, 176, 0.45)';
   ctx.font = '22px "Courier New", monospace';
-  ctx.fillText('tabtherapist.dev', W / 2, 1052);
+  ctx.fillText('tabtherapist.dev', W / 2, 1058);
+}
+
+function flashButton(btn, message) {
+  const original = btn.textContent;
+  btn.textContent = message;
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.textContent = original;
+    btn.disabled = false;
+  }, 2000);
+}
+
+function copyCanvasToClipboard(canvas) {
+  return new Promise((resolve, reject) => {
+    if (!navigator.clipboard || !window.ClipboardItem) {
+      resolve(false);
+      return;
+    }
+    canvas.toBlob(blob => {
+      if (!blob) { resolve(false); return; }
+      navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+        .then(() => resolve(true))
+        .catch(() => resolve(false));
+    }, 'image/png');
+  });
 }
 
 function setupButtons(canvas, data) {
@@ -120,21 +154,34 @@ function setupButtons(canvas, data) {
     a.click();
   });
 
-  document.getElementById('btnShareX').addEventListener('click', () => {
+  document.getElementById('btnShareX').addEventListener('click', async () => {
+    const btn         = document.getElementById('btnShareX');
     const score       = data.score       ?? 0;
     const personality = data.personality ?? 'Bilinmiyor';
-    const text = 'TabTherapist skorum: ' + score + '/100 \uD83D\uDECB\uFE0F\nKişilik Tipim: ' + personality + '\n\n#TabTherapist #TabHoarder';
+    const text = 'TabTherapist skorum: ' + score + '/100 \uD83D\uDECB\uFE0F' +
+      '\nKişilik Tipim: ' + personality +
+      '\n\n(Görseli buraya yapıştır! Ctrl+V/Cmd+V)' +
+      '\n\n#TabTherapist #TabHoarder';
+
+    const copied = await copyCanvasToClipboard(canvas);
+    if (copied) flashButton(btn, 'Görsel Kopyalandı!');
     window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text));
   });
 
-  document.getElementById('btnShareLinkedIn').addEventListener('click', () => {
+  document.getElementById('btnShareLinkedIn').addEventListener('click', async () => {
+    const btn         = document.getElementById('btnShareLinkedIn');
     const score       = data.score       ?? 0;
     const personality = data.personality ?? 'Bilinmiyor';
-    const summary = 'TabTherapist skor kartım: ' + score + '/100 — ' + personality;
     const repoUrl = 'https://github.com/emirhancebiroglu/tab-therapist';
+    const summary = 'TabTherapist skorum: ' + score + '/100 — Kişilik Tipim: ' + personality +
+      ' | Skor kartı görselini aşağıya yapıştırabilirsiniz (Ctrl+V/Cmd+V). #TabTherapist';
+
+    const copied = await copyCanvasToClipboard(canvas);
+    if (copied) flashButton(btn, 'Görsel Kopyalandı!');
     window.open(
-      'https://www.linkedin.com/sharing/share-offsite/?url=' +
-      encodeURIComponent(repoUrl) +
+      'https://www.linkedin.com/shareArticle?mini=true' +
+      '&url=' + encodeURIComponent(repoUrl) +
+      '&title=' + encodeURIComponent('TabTherapist — Sekme Psikoloji Kliniği') +
       '&summary=' + encodeURIComponent(summary)
     );
   });

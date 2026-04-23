@@ -1,7 +1,24 @@
 // TabTherapist Service Worker
 // Manifest V3: Tab event dinleyicisi ve veri yöneticisi
 
-importScripts('../utils/analyzer.js');
+import {
+  calculateHoardingScore,
+  getPersonalityType,
+  calculateAttentionFragment,
+  detectInsurancePolicyTabs,
+  calculateTabVelocity,
+  calculateContextSwitchPenalty,
+} from '../utils/analyzer.js';
+import { extractDomain, categorize } from '../utils/categorizer.js';
+import {
+  archiveTabs,
+  logVelocityEvent,
+  logSwitchEvent,
+  pruneVelocityLog,
+  pruneSwitchLog,
+  checkStorageHealth,
+  migrateV1toV2
+} from '../utils/storage.js';
 
 const ANCIENT_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 gün
 
@@ -18,6 +35,8 @@ chrome.tabs.onCreated.addListener(async (tab) => {
     };
     await chrome.storage.local.set({ tab_history });
   }
+  // v2: velocity tracking
+  await logVelocityEvent("created", tab.id, extractDomain(url));
 });
 
 // Tab kapandığında kaydı temizle
@@ -25,6 +44,8 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
   const { tab_history = {} } = await chrome.storage.local.get('tab_history');
   delete tab_history[tabId];
   await chrome.storage.local.set({ tab_history });
+  // v2: velocity tracking
+  await logVelocityEvent("removed", tabId, null);
 });
 
 // Tab aktif olduğunda lastActive güncelle
@@ -33,6 +54,16 @@ chrome.tabs.onActivated.addListener(async ({ tabId }) => {
   if (tab_history[tabId]) {
     tab_history[tabId].lastActive = Date.now();
     await chrome.storage.local.set({ tab_history });
+  }
+  // v2: context switch tracking
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    const tabUrl = tab.url || tab.pendingUrl || '';
+    const domain = extractDomain(tabUrl);
+    const category = categorize(tabUrl, tab.title || '', domain);
+    await logSwitchEvent(tabId, domain, category);
+  } catch {
+    // tab getirilemezse sessizce atla
   }
 });
 
@@ -89,13 +120,34 @@ async function collectTabStats() {
   });
   const personality = getPersonalityType(score);
 
-  return { totalTabs, totalWindows, windowMap, domainMap, duplicates, duplicateCount, score, personality };
+  // v2 metrics
+  const attentionFragment = calculateAttentionFragment(tabs);
+  const insurance = detectInsurancePolicyTabs(tabs);
+  const tabVelocity = await calculateTabVelocity();
+  const contextSwitch = await calculateContextSwitchPenalty();
+
+  const now = Date.now();
+  const ancientTabCount = tabs.filter(t => {
+    const h = tab_history[t.id];
+    return h && (now - h.firstSeen) >= ANCIENT_THRESHOLD_MS;
+  }).length;
+
+  return {
+    totalTabs, totalWindows, windowMap, domainMap, duplicates, duplicateCount, score, personality,
+    ancientTabCount,
+    attentionFragment,
+    insurancePolicy: insurance.count,
+    velocity: tabVelocity.netRate,
+    contextSwitchPenalty: contextSwitch.penalty,
+  };
 }
 
 // Popup açıldığında istatistikleri hesapla
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'GET_TAB_STATS') {
-    collectTabStats().then(sendResponse);
+    collectTabStats()
+      .then(sendResponse)
+      .catch(() => sendResponse(null));
     return true;
   }
 
@@ -139,20 +191,44 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
 
-  if (message.type === 'ARCHIVE_AND_CLOSE') {
+  if (message.type === 'ARCHIVE_TABS_V2') {
     (async () => {
       const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
       const allTabs = await chrome.tabs.query({});
-      const toClose = allTabs.filter(t => t.id !== activeTab?.id);
-      const urls = toClose
-        .map(t => t.url || t.pendingUrl || '')
-        .filter(u => u && !u.startsWith('chrome://') && !u.startsWith('chrome-extension://'));
-      const { archived_tabs = [] } = await chrome.storage.local.get('archived_tabs');
-      await chrome.storage.local.set({ archived_tabs: [...archived_tabs, ...urls] });
-      if (toClose.length) await chrome.tabs.remove(toClose.map(t => t.id));
-      sendResponse({ archived: urls.length });
+      const toArchive = allTabs.filter(t =>
+        t.id !== activeTab?.id &&
+        t.url &&
+        !t.url.startsWith('chrome://') &&
+        !t.url.startsWith('chrome-extension://')
+      );
+
+      if (toArchive.length === 0) {
+        sendResponse({ archived: 0 });
+        return;
+      }
+
+      const session = await archiveTabs(toArchive, 'manual');
+      await chrome.tabs.remove(toArchive.map(t => t.id));
+      sendResponse({ archived: toArchive.length, session });
     })();
     return true;
+  }
+});
+
+// v2: Periyodik temizlik alarmı (her 5 dakikada bir)
+chrome.alarms.create("cleanup", { periodInMinutes: 5 });
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name === "cleanup") {
+    await pruneVelocityLog();
+    await pruneSwitchLog();
+    await checkStorageHealth();
+  }
+});
+
+// v2: İlk kurulum / güncelleme → migrasyon
+chrome.runtime.onInstalled.addListener(async (details) => {
+  if (details.reason === "install" || details.reason === "update") {
+    await migrateV1toV2();
   }
 });
 

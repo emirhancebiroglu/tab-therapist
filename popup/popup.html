@@ -18,82 +18,159 @@
           <p class="app-tagline">Sekme Psikoloji Kliniği</p>
         </div>
       </div>
+      <button class="archive-open-btn" id="btnOpenArchive" title="Arşivi Aç">📁</button>
     </header>
 
-    <!-- LOADING STATE -->
-    <div class="loading-state" id="loadingState">
-      <span class="logo-icon" style="font-size:36px">🛋️</span>
-      <p class="loading-text">Terapist notlarını inceliyor...</p>
-    </div>
+    <!-- MAIN VIEW -->
+    <div id="mainView">
 
-    <!-- MAIN: Skor Dairesi + Badge -->
-    <main class="main" id="dashboardMain" hidden>
+      <!-- LOADING STATE -->
+      <div class="loading-state" id="loadingState">
+        <span class="logo-icon" style="font-size:36px">🛋️</span>
+        <p class="loading-text">Terapist notlarını inceliyor...</p>
+      </div>
 
-      <div class="score-section">
-        <div class="score-ring-wrapper">
-          <svg class="score-ring" viewBox="0 0 120 120" width="110" height="110">
-            <circle class="ring-bg" cx="60" cy="60" r="52" />
-            <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="52" />
-          </svg>
-          <div class="score-center">
-            <span class="score-value" id="scoreValue">--</span>
-            <span class="score-label">/ 100</span>
+      <!-- DASHBOARD -->
+      <main class="main" id="dashboardMain" hidden>
+
+        <div class="score-section">
+          <div class="score-ring-wrapper">
+            <svg class="score-ring" viewBox="0 0 120 120" width="110" height="110">
+              <circle class="ring-bg" cx="60" cy="60" r="52" />
+              <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="52" />
+            </svg>
+            <div class="score-center">
+              <span class="score-value" id="scoreValue">--</span>
+              <span class="score-label">/ 100</span>
+            </div>
+          </div>
+          <div class="personality-badge" id="personalityBadge">
+            <span id="personalityLabel">Yükleniyor...</span>
           </div>
         </div>
-        <div class="personality-badge" id="personalityBadge">
-          <span id="personalityLabel">Yükleniyor...</span>
+
+        <!-- STATS -->
+        <section class="stats-section">
+          <div class="stat-card">
+            <span class="stat-number" id="statTabs">--</span>
+            <span class="stat-desc">Sekme</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="statWindows">--</span>
+            <span class="stat-desc">Pencere</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="statDuplicates">--</span>
+            <span class="stat-desc">Kopya</span>
+          </div>
+        </section>
+
+        <!-- v2 METRİKLER -->
+        <div class="v2-metrics">
+          <div class="metric-card" data-tooltip="Farklı konulardaki sekmeler beynini yoruyor. %100 demek, şu an tamamen odak dışısın demek.">
+            <span class="metric-icon">🧠</span>
+            <span class="metric-label">Odak Dağınıklığı</span>
+            <span class="metric-value" id="attention-fragment">--</span>
+            <div class="metric-tooltip"></div>
+          </div>
+          <div class="metric-card" data-tooltip="48 saattir açık ama hiç yüzüne bakmadın. 'Belki lazım olur' yalanını bırakalım.">
+            <span class="metric-icon">📋</span>
+            <span class="metric-label">Unutulan Sekme</span>
+            <span class="metric-value" id="insurance-count">--</span>
+            <div class="metric-tooltip"></div>
+          </div>
+          <div class="metric-card" data-tooltip="Son 1 saatteki sekme trafiğin. Artıdaysan biriktiriyorsun, eksideysen temizliyorsun.">
+            <span class="metric-icon">⚡</span>
+            <span class="metric-label">Açma/Kapama Hızı</span>
+            <span class="metric-value" id="tab-velocity">--</span>
+            <div class="metric-tooltip"></div>
+          </div>
+          <div class="metric-card" data-tooltip="YouTube'dan koda, koddan maile... Yarım saatte çok fazla zıpladın.">
+            <span class="metric-icon">🔀</span>
+            <span class="metric-label">Zıplama Oranı</span>
+            <span class="metric-value" id="context-switch">--</span>
+            <div class="metric-tooltip"></div>
+          </div>
+        </div>
+
+        <!-- SHARE -->
+        <button class="share-btn" id="shareBtn">
+          📤 Sonucumu Paylaş
+        </button>
+
+        <!-- ACTIONS -->
+        <section class="actions-section">
+          <button class="action-btn calm" id="btnArchive">
+            📦 Arşivle &amp; Kapat
+          </button>
+          <button class="action-btn warning" id="btnMergeDuplicates">
+            🔗 Kopyaları Birleştir
+          </button>
+          <button class="action-btn danger" id="btnCloseAncient">
+            🗑️ Eski Sekmeleri Kapat
+          </button>
+        </section>
+
+      </main>
+
+      <!-- SINGLE TAB MESSAGE -->
+      <div class="loading-state" id="singleTabMsg" hidden>
+        <span style="font-size:48px">🧘</span>
+        <p class="loading-text" style="text-align:center;color:var(--accent-calm);animation:none;opacity:1">
+          Sadece 1 sekme mi? Terapiste ihtiyacın yok,<br>sen zaten aydınlanmışsın!
+        </p>
+      </div>
+
+    </div><!-- /mainView -->
+
+    <!-- ARCHIVE VIEW -->
+    <div id="archiveView" hidden>
+
+      <!-- ARCHIVE TOOLBAR -->
+      <div class="archive-toolbar">
+        <div class="archive-toolbar-top">
+          <button class="archive-back-btn" id="btnArchiveBack">← Geri</button>
+          <span class="archive-view-title">📦 Arşiv</span>
+          <button class="archive-export-btn" id="btnExport">⬇ JSON</button>
+        </div>
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="archiveSearch" placeholder="URL, başlık veya domain ara...">
+        </div>
+        <div class="filter-bar" id="filterBar">
+          <button class="filter-btn active" data-cat="all">Tümü</button>
+          <button class="filter-btn" data-cat="development">💻</button>
+          <button class="filter-btn" data-cat="media">🎬</button>
+          <button class="filter-btn" data-cat="social">💬</button>
+          <button class="filter-btn" data-cat="productivity">📊</button>
+          <button class="filter-btn" data-cat="communication">✉️</button>
+          <button class="filter-btn" data-cat="shopping">🛒</button>
+          <button class="filter-btn" data-cat="research">📚</button>
+          <button class="filter-btn" data-cat="news">📰</button>
+          <button class="filter-btn" data-cat="other">🔗</button>
         </div>
       </div>
 
-      <!-- STATS -->
-      <section class="stats-section">
-        <div class="stat-card">
-          <span class="stat-number" id="statTabs">--</span>
-          <span class="stat-desc">Sekme</span>
+      <!-- ARCHIVE CONTENT (scrollable) -->
+      <div class="archive-content">
+        <div class="empty-state" id="archiveEmptyState" hidden>
+          <span class="empty-icon">🧘</span>
+          <p>Henüz arşivlenmiş sekme yok.</p>
         </div>
-        <div class="stat-card">
-          <span class="stat-number" id="statWindows">--</span>
-          <span class="stat-desc">Pencere</span>
+        <div class="sessions-list" id="sessionsList"></div>
+        <div class="search-results" id="searchResults" hidden>
+          <h3 class="results-title">Arama Sonuçları</h3>
+          <ul class="results-list" id="resultsList"></ul>
         </div>
-        <div class="stat-card">
-          <span class="stat-number" id="statDuplicates">--</span>
-          <span class="stat-desc">Kopya</span>
-        </div>
-      </section>
+      </div>
 
-      <!-- SHARE -->
-      <button class="share-btn" id="shareBtn">
-        📤 Sonucumu Paylaş
-      </button>
-
-      <!-- ACTIONS -->
-      <section class="actions-section">
-        <button class="action-btn danger" id="btnCloseAncient">
-          🗑️ Eski Sekmeleri Kapat
-        </button>
-        <button class="action-btn warning" id="btnMergeDuplicates">
-          🔗 Kopyaları Birleştir
-        </button>
-        <button class="action-btn calm" id="btnArchive">
-          📦 Arşivle
-        </button>
-      </section>
-
-    </main>
-
-    <!-- SINGLE TAB MESSAGE -->
-    <div class="loading-state" id="singleTabMsg" hidden>
-      <span style="font-size:48px">🧘</span>
-      <p class="loading-text" style="text-align:center;color:var(--accent-calm);animation:none;opacity:1">
-        Sadece 1 sekme mi? Terapiste ihtiyacın yok,<br>sen zaten aydınlanmışsın!
-      </p>
-    </div>
+    </div><!-- /archiveView -->
 
     <footer class="footer">
-      <span>TabTherapist v1.0.0</span>
+      <span>TabTherapist v2.0.0</span>
     </footer>
-
   </div>
+
   <!-- CONFIRM MODAL -->
   <div class="modal-overlay" id="confirmModal" hidden>
     <div class="modal-box">
